@@ -6,6 +6,7 @@ import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user/user.entity';
 import { APP_PIPE } from '@nestjs/core';
+import { Admin } from './admin/admin.entity';
 
 @Module({
     imports: [
@@ -18,7 +19,7 @@ import { APP_PIPE } from '@nestjs/core';
             password: "",
             synchronize: true,
             logging: true,
-            entities: [User],
+            entities: [User, Admin],
             subscribers: [],
             migrations: [],
         }),
