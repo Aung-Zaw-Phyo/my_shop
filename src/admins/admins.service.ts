@@ -2,16 +2,16 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { scrypt as _scrypt, randomBytes } from 'crypto';
 import { promisify } from 'util';
-import { Admin } from './admin.entity';
+import { Admin } from './entities/admin.entity';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { AdminLoginDto } from './dtos/admin-login.dto';
-import { AdminCreateDto } from './dtos/admin-create.dto';
+import { AdminLoginDto } from './dto/admin-login.dto';
+import { AdminCreateDto } from './dto/admin-create.dto';
 
 const scrypt = promisify(_scrypt);
 
 @Injectable()
-export class AdminService {
+export class AdminsService {
     constructor(
         @InjectRepository(Admin) private repo: Repository<Admin>,
         private jwtService: JwtService

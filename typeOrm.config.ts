@@ -1,5 +1,5 @@
-import { Admin } from "./src/admin/admin.entity";
-import { User } from "./src/user/user.entity";
+import { Admin } from "./src/admins/entities/admin.entity";
+import { User } from "./src/users/entities/user.entity";
 import { DataSource } from "typeorm";
 
 export default new DataSource({

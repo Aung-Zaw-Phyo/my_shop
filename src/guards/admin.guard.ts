@@ -2,11 +2,11 @@ import { CanActivate, ExecutionContext, HttpException, HttpStatus, Injectable, U
 import { Reflector } from "@nestjs/core";
 import { JwtService } from "@nestjs/jwt";
 import { Request } from "express";
-import { AdminService } from "src/admin/admin.service";
+import { AdminsService } from "src/admins/admins.service";
 
 @Injectable()
 export class AdminGuard implements CanActivate {
-    constructor(private jwtService: JwtService, private adminService: AdminService) {}
+    constructor(private jwtService: JwtService, private adminsService: AdminsService) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest();
@@ -25,7 +25,7 @@ export class AdminGuard implements CanActivate {
                 secret: 'my_secret'
               }
             );
-            const user = await this.adminService.findOne(payload.id);
+            const user = await this.adminsService.findOne(payload.id);
             if (!user) {
                 throw new HttpException(
                     { message: ['Unauthenticated'], error: 'Unauthenticated' },

@@ -3,11 +3,11 @@ import { Reflector } from "@nestjs/core";
 import { JwtService } from "@nestjs/jwt";
 import { Request } from "express";
 import { Observable } from "rxjs";
-import { UserService } from "src/user/user.service";
+import { UsersService } from "src/users/users.service";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-    constructor(private jwtService: JwtService, private userService: UserService) {}
+    constructor(private jwtService: JwtService, private usersService: UsersService) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest();
@@ -25,7 +25,7 @@ export class AuthGuard implements CanActivate {
                 secret: 'my_secret'
               }
             );
-            const user = await this.userService.findOne(payload.id);
+            const user = await this.usersService.findOne(payload.id);
             if (!user) {
                 throw new HttpException(
                     { message: ['Unauthenticated'], error: 'Unauthenticated' },

@@ -1,16 +1,16 @@
 import { Body, Controller, Get, HttpException, HttpStatus, Post, Request, UnprocessableEntityException, UseGuards, UseInterceptors } from '@nestjs/common';
-import { CreateUserDto } from './dtos/create-user.dto';
-import { UserService } from './user.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UsersService } from './users.service';
 import { AuthGuard } from 'src/guards/auth.guard';
-import { LoginUserDto } from './dtos/login-user.dto';
+import { LoginUserDto } from './dto/login-user.dto';
 
 @Controller('user')
-export class UserController {
-    constructor(private userService: UserService) {}
+export class UsersController {
+    constructor(private usersService: UsersService) {}
 
     @Post('/register')
     async register(@Body() body: CreateUserDto): Promise<{ message: string; data: any; }> {
-        const result = await this.userService.register(body)
+        const result = await this.usersService.register(body)
         return {
             message: 'Successfully registered.',
             data: result
@@ -19,7 +19,7 @@ export class UserController {
 
     @Post('/login')
     async login(@Body() body: LoginUserDto): Promise<{ message: string; data: any; }> {
-        const result = await this.userService.login(body);
+        const result = await this.usersService.login(body);
         return {
             message: 'Successfully login.',
             data: result

@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { AdminService } from './admin.service';
-import { AdminController } from './admin.controller';
+import { AdminsService } from './admins.service';
+import { AdminsController } from './admins.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Admin } from './admin.entity';
+import { Admin } from './entities/admin.entity';
 import { JwtModule } from '@nestjs/jwt';
 
 @Module({
@@ -14,7 +14,7 @@ import { JwtModule } from '@nestjs/jwt';
       signOptions: { expiresIn: '3600s' },
     })
   ],
-  providers: [AdminService],
-  controllers: [AdminController]
+  providers: [AdminsService],
+  controllers: [AdminsController]
 })
-export class AdminModule {}
+export class AdminsModule {}

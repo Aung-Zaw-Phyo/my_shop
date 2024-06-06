@@ -1,17 +1,17 @@
 import { Injectable, Body, UnprocessableEntityException, BadRequestException, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './user.entity';
+import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
-import { CreateUserDto } from './dtos/create-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { promisify } from 'util';
 import { scrypt as _scrypt, randomBytes } from 'crypto';
 import { JwtService } from '@nestjs/jwt';
-import { LoginUserDto } from './dtos/login-user.dto';
+import { LoginUserDto } from './dto/login-user.dto';
 
 const scrypt = promisify(_scrypt);
 
 @Injectable()
-export class UserService {
+export class UsersService {
     constructor(
         @InjectRepository(User) private repo: Repository<User>,
         private jwtService: JwtService
