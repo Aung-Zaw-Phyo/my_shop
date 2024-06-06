@@ -1,0 +1,7 @@
+
+npm run typeorm:create-migration --name=PublicTables
+npm run typeorm migration:create ./migrations/initialSchema
+
+npm run typeorm:run-migrations
+
+npm run typeorm:revert-migrations
