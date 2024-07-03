@@ -1,6 +1,7 @@
 import { Category } from "src/categories/entities/category.entity";
 import { AbstractEntity } from "src/database/abstract.entity";
-import { Column, Entity, JoinTable, ManyToMany } from "typeorm";
+import { Variant } from "src/variants/entities/variant.entity";
+import { Column, Entity, JoinTable, ManyToMany, OneToMany } from "typeorm";
 
 @Entity()
 export class Product extends AbstractEntity<Product> {
@@ -16,4 +17,8 @@ export class Product extends AbstractEntity<Product> {
     @ManyToMany(() => Category, category => category.products)
     @JoinTable()
     categories: Category[];
+
+    @OneToMany(() => Variant, (variant) => variant.product, {cascade: true})
+    variants: Variant[];
 }
+

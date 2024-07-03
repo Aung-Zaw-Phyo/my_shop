@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module';
 import { AdminsModule } from './admins/admins.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
+import { VariantsModule } from './variants/variants.module';
 
 @Module({
     imports: [
@@ -27,7 +28,9 @@ import { ProductsModule } from './products/products.module';
         DatabaseModule,
         AdminsModule, 
         UsersModule, 
-        CategoriesModule, ProductsModule, 
+        CategoriesModule, 
+        ProductsModule, 
+        VariantsModule, 
     ],
     controllers: [AppController],
     providers: [
