@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -8,27 +8,55 @@ export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @Post()
-  create(@Body() createCategoryDto: CreateCategoryDto) {
-    return this.categoriesService.create(createCategoryDto);
+  async create(@Body() createCategoryDto: CreateCategoryDto) {
+    const result = await this.categoriesService.create(createCategoryDto);
+    return {
+      message: "Category created successfully.",
+      data: {
+        category: result
+      }
+    }
   }
 
   @Get()
-  findAll() {
-    return this.categoriesService.findAll();
+  async findAll() {
+    const result = await this.categoriesService.findAll();
+    return {
+      message: "Categories.",
+      data: {
+        categories: result
+      }
+    }
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.categoriesService.findOne(+id);
+  async getCategory(@Param('id') id: string) {
+    const result = await this.categoriesService.getCategory(+id);
+    return {
+      message: "Category.",
+      data: {
+        category: result
+      }
+    }
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
-    return this.categoriesService.update(+id, updateCategoryDto);
+  @Put(':id')
+  async update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
+    const result = await this.categoriesService.update(+id, updateCategoryDto);
+    return {
+      message: "Category updated successfully.",
+      data: {
+        category: result
+      }
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.categoriesService.remove(+id);
+  async remove(@Param('id') id: string) {
+    await this.categoriesService.remove(+id);
+    return {
+      message: "Category deleted successfully.",
+      data: null
+    }
   }
 }

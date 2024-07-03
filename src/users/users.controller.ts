@@ -4,12 +4,12 @@ import { UsersService } from './users.service';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { LoginUserDto } from './dto/login-user.dto';
 
-@Controller('user')
+@Controller('users')
 export class UsersController {
     constructor(private usersService: UsersService) {}
 
     @Post('/register')
-    async register(@Body() body: CreateUserDto): Promise<{ message: string; data: any; }> {
+    async register(@Body() body: CreateUserDto): Promise<ApiResponse<any>> {
         const result = await this.usersService.register(body)
         return {
             message: 'Successfully registered.',
@@ -18,7 +18,7 @@ export class UsersController {
     }
 
     @Post('/login')
-    async login(@Body() body: LoginUserDto): Promise<{ message: string; data: any; }> {
+    async login(@Body() body: LoginUserDto): Promise<ApiResponse<any>> {
         const result = await this.usersService.login(body);
         return {
             message: 'Successfully login.',
@@ -28,7 +28,7 @@ export class UsersController {
 
     @Get('/profile')
     @UseGuards(AuthGuard)
-    getProfile(@Request() req) {
+    async getProfile(@Request() req): Promise<ApiResponse<any>> {
         return {
             message: 'success',
             data: req.user

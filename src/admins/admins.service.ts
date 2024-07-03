@@ -67,9 +67,7 @@ export class AdminsService {
         const user = Object(savedUser);
         delete user.password;
 
-        return {
-            user: user,
-        }
+        return user;
     }
 
     

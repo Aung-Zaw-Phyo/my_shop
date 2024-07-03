@@ -18,6 +18,9 @@ async function bootstrap() {
       },
       stopAtFirstError: true,
     }),
+    new ValidationPipe({
+      whitelist: true
+    })
   );
   await app.listen(3000);
 }

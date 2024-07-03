@@ -4,7 +4,7 @@ import { AdminLoginDto } from './dto/admin-login.dto';
 import { AdminCreateDto } from './dto/admin-create.dto';
 import { AdminGuard } from 'src/guards/admin.guard';
 
-@Controller('admin')
+@Controller('admins')
 export class AdminsController {
     constructor(private adminsService: AdminsService) {}
 
