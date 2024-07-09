@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateVariantDto } from './dto/create-variant.dto';
-import { UpdateVariantDto } from './dto/update-variant.dto';
+import { CreateVariantDto } from './dto/requests/create-variant.dto';
+import { UpdateVariantDto } from './dto/requests/update-variant.dto';
 import { ProductsService } from 'src/products/products.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Variant } from './entities/variant.entity';
@@ -14,12 +14,6 @@ export class VariantsService {
   ) {}
   async create(createVariantDto: CreateVariantDto) {
     const product = await this.productService.findOne(createVariantDto.productId);
-    if(!product) {
-      throw new HttpException(
-        { message: ['Product not found.'], error: 'Not found' },
-        HttpStatus.NOT_FOUND,
-      );
-    }
 
     const variant = new Variant({
       color: createVariantDto.color,

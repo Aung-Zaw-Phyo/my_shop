@@ -1,5 +1,5 @@
 import { IsNumber, IsString, MinLength, Validate } from "class-validator";
-import { IsProductExists } from "../validator/is-product-exists.validator";
+import { IsProductExists } from "../../validator/is-product-exists.validator";
 
 export class CreateVariantDto {
     @IsString({message: "Enter valid variant color."})

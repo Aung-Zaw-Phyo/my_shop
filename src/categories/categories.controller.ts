@@ -1,62 +1,41 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
+import { CreateCategoryDto } from './dto/requests/create-category.dto';
+import { UpdateCategoryDto } from './dto/requests/update-category.dto';
+import { Serialize } from 'src/common/interceptors/serialize.interceptor';
+import { CategoryDto } from './dto/responses/category.dto';
 
 @Controller('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
   @Post()
-  async create(@Body() createCategoryDto: CreateCategoryDto) {
-    const result = await this.categoriesService.create(createCategoryDto);
-    return {
-      message: "Category created successfully.",
-      data: {
-        category: result
-      }
-    }
+  @Serialize(CategoryDto, "Category created successfully.")
+  create(@Body() createCategoryDto: CreateCategoryDto) {
+    return this.categoriesService.create(createCategoryDto);
   }
 
   @Get()
-  async findAll() {
-    const result = await this.categoriesService.findAll();
-    return {
-      message: "Categories.",
-      data: {
-        categories: result
-      }
-    }
+  @Serialize(CategoryDto, "Categories fetched successfully.")
+  findAll() {
+    return this.categoriesService.findAll();
   }
 
   @Get(':id')
-  async getCategory(@Param('id') id: string) {
-    const result = await this.categoriesService.getCategory(+id);
-    return {
-      message: "Category.",
-      data: {
-        category: result
-      }
-    }
+  @Serialize(CategoryDto)
+  getCategory(@Param('id') id: string) {
+    return this.categoriesService.findOne(+id);
   }
 
   @Put(':id')
-  async update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
-    const result = await this.categoriesService.update(+id, updateCategoryDto);
-    return {
-      message: "Category updated successfully.",
-      data: {
-        category: result
-      }
-    }
+  @Serialize(CategoryDto, "Category updated successfully.")
+  update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
+    return this.categoriesService.update(+id, updateCategoryDto);
   }
 
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    await this.categoriesService.remove(+id);
-    return {
-      message: "Category deleted successfully.",
-      data: null
-    }
+  @Serialize(CategoryDto, "Category deleted successfully.")
+  remove(@Param('id') id: string) {
+    return this.categoriesService.remove(+id);
   }
 }

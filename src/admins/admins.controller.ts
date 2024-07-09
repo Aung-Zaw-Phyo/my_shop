@@ -1,37 +1,32 @@
 import { Body, Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
 import { AdminsService } from './admins.service';
-import { AdminLoginDto } from './dto/admin-login.dto';
-import { AdminCreateDto } from './dto/admin-create.dto';
-import { AdminGuard } from 'src/guards/admin.guard';
+import { AdminGuard } from 'src/common/guards/admin.guard';
+import { LoginAdminDto } from './dto/requests/login-admin.dto';
+import { CreateAdminDto } from './dto/requests/create-admin.dto';
+import { Serialize } from 'src/common/interceptors/serialize.interceptor';
+import { AdminDto } from './dto/responses/admin.dto';
+import { AuthAdminDto } from './dto/responses/auth-admin.dto';
 
 @Controller('admins')
 export class AdminsController {
     constructor(private adminsService: AdminsService) {}
 
     @Post('/login')
-    async login(@Body() body: AdminLoginDto): Promise<{ message: string; data: any; }> {
-        const result = await this.adminsService.login(body);
-        return {
-            message: 'Successfully login.',
-            data: result
-        };
+    @Serialize(AuthAdminDto, 'Successfully login.')
+    login(@Body() body: LoginAdminDto) {
+        return this.adminsService.login(body);
     }
 
     @Post('/create')
-    async createAccount(@Body() body: AdminCreateDto): Promise<{ message: string; data: any; }> {
-        const result = await this.adminsService.createAccount(body)
-        return {
-            message: 'Successfully created.',
-            data: result
-        };
+    @Serialize(AdminDto, 'Successfully created.')
+    createAccount(@Body() body: CreateAdminDto) {
+        return this.adminsService.createAccount(body)
     }
 
     @Get('/profile')
     @UseGuards(AdminGuard)
+    @Serialize(AdminDto)
     getProfile(@Request() req): { message: string; data: any; } {
-        return {
-            message: 'success',
-            data: req.user
-        };
+        return req.user
     }
 }

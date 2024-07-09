@@ -5,8 +5,8 @@ import { promisify } from 'util';
 import { Admin } from './entities/admin.entity';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
-import { AdminLoginDto } from './dto/admin-login.dto';
-import { AdminCreateDto } from './dto/admin-create.dto';
+import { LoginAdminDto } from './dto/requests/login-admin.dto';
+import { CreateAdminDto } from './dto/requests/create-admin.dto';
 
 const scrypt = promisify(_scrypt);
 
@@ -17,15 +17,15 @@ export class AdminsService {
         private jwtService: JwtService
     ) {}
 
-    async login(data: AdminLoginDto) {
-        const [userFromDb] = await this.find(data.email)
-        if(!userFromDb) {
+    async login(data: LoginAdminDto) {
+        const [user] = await this.find(data.email)
+        if(!user) {
             throw new HttpException(
                 { message: ['Your credentials is incorrect.'], error: 'Validation Error' },
                 HttpStatus.NOT_FOUND,
             );
         }
-        const [salt, storedHash] = userFromDb.password.split('.');
+        const [salt, storedHash] = user.password.split('.');
         const hash = (await scrypt(data.password, salt, 32)) as Buffer;
         if(storedHash !== hash.toString('hex')) {
             throw new HttpException(
@@ -33,19 +33,11 @@ export class AdminsService {
                 HttpStatus.UNPROCESSABLE_ENTITY,
             );
         }
-        const user = Object(userFromDb);
-        delete user.password;
+        const token = await this.generateToken({ id: user.id, email: user.email });
+        return {...user, access_token: token};
+    }   
 
-        const payload = { id: user.id, email: user.email };
-        const access_token = await this.jwtService.signAsync(payload);
-
-        return {
-            user: user,
-            token: access_token,
-        }
-    }
-
-    async createAccount(data: AdminCreateDto) {
+    async createAccount(data: CreateAdminDto) {
         const existedUser = await this.repo.findOne({where: {email: data.email}});
         if(existedUser) {
             throw new HttpException(
@@ -53,7 +45,6 @@ export class AdminsService {
                 HttpStatus.UNPROCESSABLE_ENTITY,
             );
         }
-
         const salt = randomBytes(8).toString('hex');
         const hash = (await scrypt(data.password, salt, 32)) as Buffer;
         const hashPassword = salt + "." + hash.toString('hex');
@@ -63,23 +54,19 @@ export class AdminsService {
             email: data.email,
             password: hashPassword
         });
-        const savedUser = await this.repo.save(userInstance);
-        const user = Object(savedUser);
-        delete user.password;
-
+        const user = await this.repo.save(userInstance);
         return user;
     }
 
-    
-
     findOne(id: number) {
-        if(!id) {
-            return null;
-        }
         return this.repo.findOne({where: {id}}); 
     }
 
     find(email: string) {
         return this.repo.find({ where: { email } });
+    }
+
+    async generateToken(payload) {
+        return this.jwtService.signAsync(payload);
     }
 }

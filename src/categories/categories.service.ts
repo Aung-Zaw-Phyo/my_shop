@@ -1,9 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from './entities/category.entity';
 import { EntityManager, Repository } from 'typeorm';
+import { CreateCategoryDto } from './dto/requests/create-category.dto';
+import { UpdateCategoryDto } from './dto/requests/update-category.dto';
 
 @Injectable()
 export class CategoriesService {
@@ -23,11 +23,9 @@ export class CategoriesService {
     return this.repo.find();
   }
 
-  async getCategory(id: number) {
-    const category = await this.repo.findOne({
-      where: {id},
-      relations: ['products']
-    })
+
+  async findOne(id: number) {
+    const category = await this.repo.findOne({where: {id}})
     if(!category) {
       throw new HttpException(
         { message: ['Category not found.'], error: 'Not found' },
@@ -37,12 +35,6 @@ export class CategoriesService {
     return category;
   }
 
-  findOne(id: number) {
-    return this.repo.findOne({
-      where: {id},
-    });
-  }
-
   async update(id: number, updateCategoryDto: UpdateCategoryDto) {
     const category = await this.findOne(id);
     Object.assign(category, updateCategoryDto);
@@ -50,7 +42,8 @@ export class CategoriesService {
   }
 
   async remove(id: number) {
-    await this.findOne(id);
-    return this.repo.delete(id);
+    const category = await this.findOne(id);
+    await this.repo.delete(id);
+    return category;
   }
 }

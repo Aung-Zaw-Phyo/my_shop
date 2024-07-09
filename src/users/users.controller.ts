@@ -1,38 +1,33 @@
 import { Body, Controller, Get, HttpException, HttpStatus, Post, Request, UnprocessableEntityException, UseGuards, UseInterceptors } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto } from './dto/requests/create-user.dto';
 import { UsersService } from './users.service';
-import { AuthGuard } from 'src/guards/auth.guard';
-import { LoginUserDto } from './dto/login-user.dto';
+import { AuthGuard } from 'src/common/guards/auth.guard';
+import { LoginUserDto } from './dto/requests/login-user.dto';
+import { UserDto } from './dto/responses/user.dto';
+import { AuthUserDto } from './dto/responses/auth-user.dto';
+import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 
 @Controller('users')
 export class UsersController {
     constructor(private usersService: UsersService) {}
 
     @Post('/register')
-    async register(@Body() body: CreateUserDto): Promise<ApiResponse<any>> {
-        const result = await this.usersService.register(body)
-        return {
-            message: 'Successfully registered.',
-            data: result
-        };
+    @Serialize(AuthUserDto, 'Successfully registered.')
+    register(@Body() body: CreateUserDto) {
+        return this.usersService.register(body)
     }
 
     @Post('/login')
-    async login(@Body() body: LoginUserDto): Promise<ApiResponse<any>> {
-        const result = await this.usersService.login(body);
-        return {
-            message: 'Successfully login.',
-            data: result
-        };
+    @Serialize(AuthUserDto, 'Successfully login.')
+    login(@Body() body: LoginUserDto) {
+        return this.usersService.login(body);
     }
 
     @Get('/profile')
     @UseGuards(AuthGuard)
-    async getProfile(@Request() req): Promise<ApiResponse<any>> {
-        return {
-            message: 'success',
-            data: req.user
-        };
+    @Serialize(UserDto, 'Successfully fetch profile data.')
+    getProfile(@Request() req) {
+        return req.user;
     }
 }
 

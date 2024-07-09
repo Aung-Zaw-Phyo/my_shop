@@ -1,11 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
 import { Repository } from 'typeorm';
-import { Category } from 'src/categories/entities/category.entity';
 import { CategoriesService } from 'src/categories/categories.service';
+import { CreateProductDto } from './dto/requests/create-product.dto';
+import { UpdateProductDto } from './dto/requests/update-product.dto';
 
 @Injectable()
 export class ProductsService {
@@ -38,7 +37,10 @@ export class ProductsService {
   }
 
   async getProduct(id: number) {
-    const product = await this.findOne(id);
+    const product = await this.repo.findOne({
+      where: {id}, 
+      relations: ['categories', 'variants'], 
+    }); 
     if(!product) {
       throw new HttpException(
         { message: ['Product not found.'], error: 'Not found' },
@@ -48,21 +50,19 @@ export class ProductsService {
     return product; 
   }
 
-  findOne(id: number) {
-    if(!id) {
-      return null;
-    }
-    return this.repo.findOne({where: {id}, relations: ['categories']}); 
-  }
-
-  async update(id: number, data: UpdateProductDto) {
-    const product = await this.findOne(id);
+  async findOne(id: number) {
+    const product = await this.repo.findOne({where: {id: id}});
     if(!product) {
       throw new HttpException(
         { message: ['Product not found.'], error: 'Not found' },
         HttpStatus.NOT_FOUND,
       );
     }
+    return product;
+  }
+
+  async update(id: number, data: UpdateProductDto) {
+    const product = await this.findOne(id);
     Object.assign(product, data);
     if(data.categories) {
       const categories = await Promise.all(
@@ -78,12 +78,7 @@ export class ProductsService {
 
   async remove(id: number) {
     const product = await this.findOne(id);
-    if(!product){
-      throw new HttpException(
-        { message: ['Product not found.'], error: 'Not found' },
-        HttpStatus.NOT_FOUND,
-      );
-    }
-    return this.repo.remove(product);
+    await this.repo.remove(product);
+    return product;
   }
 }
