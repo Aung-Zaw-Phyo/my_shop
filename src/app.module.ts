@@ -8,6 +8,7 @@ import { AdminsModule } from './admins/admins.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
 import { VariantsModule } from './variants/variants.module';
+import { CartsModule } from './carts/carts.module';
 
 @Module({
     imports: [
@@ -30,7 +31,7 @@ import { VariantsModule } from './variants/variants.module';
         UsersModule, 
         CategoriesModule, 
         ProductsModule, 
-        VariantsModule, 
+        VariantsModule, CartsModule, 
     ],
     controllers: [AppController],
     providers: [
