@@ -18,7 +18,7 @@ export class CartsService {
   }
 
   async getCart(user: User) {
-    let cart = await this.repo.findOne({where: {user: user}});
+    let cart = await this.repo.findOne({where: {user: user}, relations: ['items']});
     if(!cart) {
       const userInstance = this.repo.create({
         user: user

@@ -18,6 +18,6 @@ export class User {
     @Column()
     password: string;
 
-    @OneToOne(() => Cart, (cart) => cart.user)
+    @OneToOne(() => Cart, (cart) => cart.user, {cascade: true})
     cart: Cart
 }

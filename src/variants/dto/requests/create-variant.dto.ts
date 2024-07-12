@@ -1,5 +1,4 @@
 import { IsNumber, IsString, MinLength, Validate } from "class-validator";
-import { IsProductExists } from "../../validator/is-product-exists.validator";
 
 export class CreateVariantDto {
     @IsString({message: "Enter valid variant color."})
@@ -13,7 +12,6 @@ export class CreateVariantDto {
     @IsNumber()
     stock: number;
 
-    // @Validate(IsProductExists, { message: 'Product ID does not exist.' })
     @IsNumber()
     productId: number;
 }

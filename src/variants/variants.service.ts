@@ -30,7 +30,7 @@ export class VariantsService {
   }
 
   async findOne(id: number) {
-    const variant = await this.repo.findOne({where: {id}}); 
+    const variant = await this.repo.findOne({where: {id}, relations: ['product']}); 
     if(!variant) {
       throw new HttpException(
         { message: ['Variant not found.'], error: 'Not found' },
@@ -38,6 +38,22 @@ export class VariantsService {
       );
     }
     return variant; 
+  }
+
+  async reduceStock(variant: Variant, quantity: number) {
+    if(variant.stock - quantity < 0) {
+      throw new HttpException(
+        { message: ['Product is not enough.'], error: 'Validation Error' },
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
+    }
+    variant.stock = variant.stock - quantity;
+    await this.repo.save(variant);
+  }
+
+  async addStock(variant: Variant, quantity: number) {
+    variant.stock = variant.stock + quantity;
+    await this.repo.save(variant);
   }
 
   async update(id: number, updateVariantDto: UpdateVariantDto) {
