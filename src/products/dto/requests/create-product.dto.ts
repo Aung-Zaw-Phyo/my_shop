@@ -9,9 +9,14 @@ export class CreateProductDto {
     @MinLength(1)
     description: string;
 
-    @IsNumber()
-    price: number;
+    @IsString()
+    price: string;
 
     @IsArray()
+    @IsOptional()
     categories: number[];
+
+    @IsArray()
+    @IsOptional()
+    images: Express.Multer.File[];
 }

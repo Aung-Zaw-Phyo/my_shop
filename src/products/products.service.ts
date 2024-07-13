@@ -5,16 +5,18 @@ import { Repository } from 'typeorm';
 import { CategoriesService } from 'src/categories/categories.service';
 import { CreateProductDto } from './dto/requests/create-product.dto';
 import { UpdateProductDto } from './dto/requests/update-product.dto';
+import { Image } from './entities/image.entity';
 
 @Injectable()
 export class ProductsService {
   constructor(
     @InjectRepository(Product) private readonly repo: Repository<Product>,
+    @InjectRepository(Image) private readonly imageRepo: Repository<Image>,
     private readonly catService: CategoriesService,
   ) {}
 
-  async create(data: CreateProductDto) {
-    const categories = await Promise.all(
+  async create(data: CreateProductDto, files: Express.Multer.File[]) {
+    const categories = !data.categories ? null : await Promise.all(
       data.categories.map(async id => {
           const category = await this.catService.findOne(id);
           return category;
@@ -23,23 +25,36 @@ export class ProductsService {
     const product = new Product({
       name: data.name,
       description: data.description,
-      price: data.price,
+      price: +data.price,
       categories: categories,
     });
-    const result = await this.repo.save(product);
-    return result;
+    const savedProduct = await this.repo.save(product);
+
+    const images = files.map(file => {
+      const image = new Image({
+        name: file.filename,
+        product: savedProduct,
+      });
+      return this.imageRepo.save(image);
+    });
+
+    await Promise.all(images);
+
+    return savedProduct;
   }
 
-  findAll() {
-    return this.repo.find({
-      relations: ['categories']
+  async findAll() {
+    const products = await this.repo.find({
+      relations: ['categories', 'images']
     });
+    const result = products.map(product => this.formatProductData(product));
+    return result;
   }
 
   async getProduct(id: number) {
     const product = await this.repo.findOne({
       where: {id}, 
-      relations: ['categories', 'variants'], 
+      relations: ['categories', 'variants', 'images'], 
     }); 
     if(!product) {
       throw new HttpException(
@@ -47,7 +62,8 @@ export class ProductsService {
         HttpStatus.NOT_FOUND,
       );
     }
-    return product; 
+    const result = this.formatProductData(product);
+    return result; 
   }
 
   async findOne(id: number) {
@@ -80,5 +96,13 @@ export class ProductsService {
     const product = await this.findOne(id);
     await this.repo.remove(product);
     return product;
+  }
+
+  formatProductData(product: Product) {
+    product.images = product.images.map(image => {
+      image['path'] = process.env.APP_URL + `/products/${product.id}/images/` + image.name;
+      return image;
+    })
+    return product
   }
 }
