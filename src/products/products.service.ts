@@ -6,6 +6,8 @@ import { CategoriesService } from 'src/categories/categories.service';
 import { CreateProductDto } from './dto/requests/create-product.dto';
 import { UpdateProductDto } from './dto/requests/update-product.dto';
 import { Image } from './entities/image.entity';
+import { promises as fs } from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class ProductsService {
@@ -29,17 +31,9 @@ export class ProductsService {
       categories: categories,
     });
     const savedProduct = await this.repo.save(product);
-
-    const images = files.map(file => {
-      const image = new Image({
-        name: file.filename,
-        product: savedProduct,
-      });
-      return this.imageRepo.save(image);
-    });
-
-    await Promise.all(images);
-
+    if(files) {
+      await this.saveImages(files, savedProduct);
+    }
     return savedProduct;
   }
 
@@ -77,7 +71,7 @@ export class ProductsService {
     return product;
   }
 
-  async update(id: number, data: UpdateProductDto) {
+  async update(id: number, data: UpdateProductDto, files: Express.Multer.File[]) {
     const product = await this.findOne(id);
     Object.assign(product, data);
     if(data.categories) {
@@ -89,6 +83,9 @@ export class ProductsService {
       );
       product.categories = categories;
     }
+    if(files) {
+      await this.saveImages(files, product);
+    }
     return this.repo.save(product);
   }
 
@@ -98,11 +95,35 @@ export class ProductsService {
     return product;
   }
 
+  async removeImage(id: number) {
+    const image = await this.imageRepo.findOne({where: {id}});
+    if(!image) {
+      throw new HttpException(
+        {message: ["Product image not found."], error: "Not found"},
+        HttpStatus.NOT_FOUND,
+      )
+    }
+    await fs.unlink(join(__dirname, '..', '..', '..', 'uploads', 'products', image.name as string))
+    await this.imageRepo.remove(image);
+    return null;
+  }
+
   formatProductData(product: Product) {
     product.images = product.images.map(image => {
       image['path'] = process.env.APP_URL + `/products/${product.id}/images/` + image.name;
       return image;
     })
     return product
+  }
+
+  async saveImages(files: Express.Multer.File[], product: Product) {
+    const images = files.map(file => {
+      const image = new Image({
+        name: file.filename,
+        product: product,
+      });
+      return this.imageRepo.save(image);
+    })
+    await Promise.all(images);
   }
 }

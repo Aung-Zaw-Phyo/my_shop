@@ -51,14 +51,31 @@ export class ProductsController {
   }
 
   @Put(':id')
+  @UseInterceptors(FilesInterceptor('images', 10, {
+    storage: diskStorage({
+      destination: './uploads/products',
+      filename: (req, file, cb) => {
+        const randomName = Array(32).fill(null)
+          .map(() => Math.round(Math.random() * 16).toString(16))
+          .join('');
+        cb(null, `${randomName}${extname(file.originalname)}`);
+      },
+    }) 
+  }))
   @Serialize(ProductDto, "Product updated successfully.")
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productsService.update(+id, updateProductDto);
+  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto, @UploadedFiles() files: Express.Multer.File[]) {
+    return this.productsService.update(+id, updateProductDto, files);
   }
 
   @Delete(':id')
   @Serialize(ProductDto, "Product deleted successfully.")
   remove(@Param('id') id: string) {
     return this.productsService.remove(+id);
+  }
+
+  @Delete(':id/images/:image_id')
+  @Serialize(null, "Product image deleted successfully.")
+  removeImage(@Param('image_id') image_id: string) {
+    return this.productsService.removeImage(+image_id);
   }
 }
