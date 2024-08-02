@@ -11,6 +11,12 @@ import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 export class UsersController {
     constructor(private usersService: UsersService) {}
 
+    @Get('/')
+    @Serialize(UserDto)
+    getUsers() {
+        return this.usersService.findAll();
+    }
+
     @Post('/register')
     @Serialize(AuthUserDto, 'Successfully registered.')
     register(@Body() body: CreateUserDto) {

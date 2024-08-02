@@ -17,6 +17,11 @@ export class UsersService {
         private jwtService: JwtService
     ) {}
 
+    
+  findAll() {
+    return this.repo.find();
+  }
+
     async register(data: CreateUserDto) {
         const [userFromDb] = await this.find(data.email);
         if(userFromDb) {
