@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 
 interface ResponseFormat<T> {
   success: boolean;
-  message: string;
+  messages: string[];
   error: string | null;
   statusCode: number;
   data: T | null;
@@ -16,10 +16,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const status = exception.getStatus();
     const exceptionResponse: any = exception.getResponse();
-
+    const messages = typeof exceptionResponse.message == 'string' ? [exceptionResponse.message] : exceptionResponse.message;
     response.status(status).json({
       success: false,
-      message: exceptionResponse.message || 'An error occurred',
+      messages: messages || 'An error occurred',
       error: exceptionResponse.error || null,
       statusCode: status,
       data: null,

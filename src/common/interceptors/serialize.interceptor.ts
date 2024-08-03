@@ -11,7 +11,7 @@ interface ClassConstructor {
 
 interface ResponseFormat<T> {
   success: boolean;
-  message: string;
+  messages: string[];
   error: string | null;
   statusCode: number;
   data: any;
@@ -29,13 +29,27 @@ export class SerializeInterceptor<T> implements NestInterceptor {
       map((data: any): ResponseFormat<T> => {
         const response = context.switchToHttp().getResponse();
         const statusCode = response.statusCode;
-
-        const newFormat = plainToClass(this.dto, data, {
+        if(data.items && data.meta && data.links) {
+          return {
+            success: statusCode >= 200 && statusCode < 300,
+            messages: [this.message],
+            error: null,
+            statusCode,
+            data: {
+              items: plainToClass(this.dto, data.items, {
+                excludeExtraneousValues: true,
+              }),
+              meta: data.meta,
+              links: data.links,
+            },
+          };
+        }
+        let newFormat = plainToClass(this.dto, data, {
           excludeExtraneousValues: true,
         });
         return {
           success: statusCode >= 200 && statusCode < 300,
-          message: this.message,
+          messages: [this.message],
           error: null,
           statusCode,
           data: newFormat,

@@ -1,9 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Category } from './entities/category.entity';
-import { EntityManager, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreateCategoryDto } from './dto/requests/create-category.dto';
 import { UpdateCategoryDto } from './dto/requests/update-category.dto';
+import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
 
 @Injectable()
 export class CategoriesService {
@@ -23,6 +24,12 @@ export class CategoriesService {
     return this.repo.find();
   }
 
+  async paginate(options: IPaginationOptions): Promise<Pagination<Category>> {
+    const queryBuilder = this.repo.createQueryBuilder('c');
+    // queryBuilder.orderBy('c.name', 'DESC');
+
+    return paginate<Category>(queryBuilder, options);
+  }
 
   async findOne(id: number) {
     const category = await this.repo.findOne({where: {id}})
