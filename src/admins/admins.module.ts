@@ -11,10 +11,11 @@ import { JwtModule } from '@nestjs/jwt';
     JwtModule.register({
       global: true,
       secret: 'my_secret',
-      signOptions: { expiresIn: '3600s' },
+      signOptions: { expiresIn: '36000s' },
     })
   ],
   providers: [AdminsService],
-  controllers: [AdminsController]
+  controllers: [AdminsController],
+  exports: [AdminsService],
 })
 export class AdminsModule {}

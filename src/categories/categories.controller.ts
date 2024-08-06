@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put, Query, DefaultValuePipe, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, Query, DefaultValuePipe, ParseIntPipe, UseGuards } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/requests/create-category.dto';
 import { UpdateCategoryDto } from './dto/requests/update-category.dto';
@@ -7,6 +7,7 @@ import { CategoryDto } from './dto/responses/category.dto';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { Category } from './entities/category.entity';
 import { paginate_items_limit } from 'src/common/constants';
+import { AdminGuard } from 'src/common/guards/admin.guard';
 
 @Controller('categories')
 export class CategoriesController {
@@ -14,6 +15,7 @@ export class CategoriesController {
 
   @Post()
   @Serialize(CategoryDto, "Category created successfully.")
+  @UseGuards(AdminGuard)
   create(@Body() createCategoryDto: CreateCategoryDto) {
     return this.categoriesService.create(createCategoryDto);
   }
@@ -40,12 +42,14 @@ export class CategoriesController {
 
   @Put(':id')
   @Serialize(CategoryDto, "Category updated successfully.")
+  @UseGuards(AdminGuard)
   update(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
     return this.categoriesService.update(+id, updateCategoryDto);
   }
 
   @Delete(':id')
   @Serialize(CategoryDto, "Category deleted successfully.")
+  @UseGuards(AdminGuard)
   remove(@Param('id') id: string) {
     return this.categoriesService.remove(+id);
   }

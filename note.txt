@@ -5,3 +5,5 @@ npm run typeorm migration:create ./migrations/initialSchema
 npm run typeorm:run-migrations
 
 npm run typeorm:revert-migrations
+
+https://medium.com/@mushti8/is-unique-custom-validation-on-nestjs-bda61a5b92c8
