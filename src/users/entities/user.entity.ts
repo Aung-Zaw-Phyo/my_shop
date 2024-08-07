@@ -1,8 +1,9 @@
 import { Cart } from "src/carts/entities/cart.entity";
+import { AbstractEntity } from "src/common/database/abstract.entity";
 import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
-export class User {
+export class User extends AbstractEntity<User> {
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -18,6 +19,6 @@ export class User {
     @Column()
     password: string;
 
-    @OneToOne(() => Cart, (cart) => cart.user, {cascade: true})
-    cart: Cart
+    @OneToOne(() => Cart, (cart) => cart.user, { cascade: true, onDelete: 'CASCADE' })
+    cart: Cart;
 }

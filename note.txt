@@ -7,3 +7,5 @@ npm run typeorm:run-migrations
 npm run typeorm:revert-migrations
 
 https://medium.com/@mushti8/is-unique-custom-validation-on-nestjs-bda61a5b92c8
+
+https://medium.com/@ahmshahin5353/generating-image-thumbnails-in-nestjs-53a8694e8bfe

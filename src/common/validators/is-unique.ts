@@ -18,7 +18,7 @@ export class IsUniqueConstraint implements ValidatorConstraintInterface {
         ): Promise<boolean> {
             // catch options from decorator
             const {tableName, column}: IsUniqeInterface = args.constraints[0]
-            console.log('***********************', this)
+            console.log('UNIQUE VALIDATION: ', this)
             // database query check data is exists
             const dataExist = await this.entityManager.getRepository(tableName)
                 .createQueryBuilder(tableName)

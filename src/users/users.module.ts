@@ -3,7 +3,8 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { JwtModule, JwtService } from '@nestjs/jwt';
+import { JwtModule } from '@nestjs/jwt';
+import { AdminsModule } from 'src/admins/admins.module';
 
 @Module({
   imports: [
@@ -11,8 +12,9 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
     JwtModule.register({
       global: true,
       secret: 'my_secret',
-      signOptions: { expiresIn: '3600s' },
-    })
+      signOptions: { expiresIn: '36000s' },
+    }),
+    AdminsModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],

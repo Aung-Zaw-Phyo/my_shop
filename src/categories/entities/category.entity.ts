@@ -11,10 +11,4 @@ export class Category extends AbstractEntity<Category> {
 
     @ManyToMany(() => Product, product => product.categories, { cascade: true, onDelete: 'CASCADE' })
     products: Product[];
-
-    @CreateDateColumn({type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)"})
-    createdAt: Date;
-
-    @UpdateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP(6)", onUpdate: "CURRENT_TIMESTAMP(6)" })
-    updatedAt: Date;
 }   
