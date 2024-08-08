@@ -1,4 +1,5 @@
-import { IsEmail, IsOptional, IsString, MinLength, minLength } from "class-validator";
+import { IsEmail, IsOptional, IsString, MinLength } from "class-validator";
+import { IsUnique } from "src/common/validators/is-unique";
 
 export class CreateAdminDto {
     @IsString({message: "Name must be at least 3 characters."})
@@ -6,6 +7,7 @@ export class CreateAdminDto {
     name: string;
 
     @IsString({message: "Please enter a valid email."})
+    @IsUnique({tableName: 'admin', column: 'email'})
     @IsEmail()
     email: string;
 

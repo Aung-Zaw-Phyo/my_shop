@@ -1,6 +1,7 @@
-import { Expose } from "class-transformer";
+import { Expose, Transform } from "class-transformer";
+import { AbstractDto } from "src/common/dto/abstract.dto";
 
-export class AdminDto {
+export class AdminDto extends AbstractDto {
     @Expose()
     id: string;
 
@@ -11,5 +12,6 @@ export class AdminDto {
     email: string
 
     @Expose()
+    @Transform(({value}) => value ? `${process.env.APP_URL}/uploads/admins/${value}`: null)
     image: string
 }

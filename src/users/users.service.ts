@@ -116,7 +116,10 @@ export class UsersService {
                 throwValidationError('Email has already exist.');
             }
         }
-        if(!updateUserDto.password) {
+
+        if(updateUserDto.password) {
+            updateUserDto.password = await generatePassword(updateUserDto.password)
+        }else {
             updateUserDto.password = user.password
         }
         if(file && user.image) {

@@ -80,7 +80,7 @@ export class UsersController {
     @Get(':id')
     @Serialize(UserDto)
     @UseGuards(AdminGuard)
-    getCategory(@Param('id') id: string) {
+    getUser(@Param('id') id: string) {
       return this.usersService.findOne(+id);
     }
 

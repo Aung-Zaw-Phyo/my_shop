@@ -3,10 +3,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { scrypt as _scrypt, randomBytes } from 'crypto';
 import { promisify } from 'util';
 import { Admin } from './entities/admin.entity';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { LoginAdminDto } from './dto/requests/login-admin.dto';
 import { CreateAdminDto } from './dto/requests/create-admin.dto';
+import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
+import { generatePassword, removeImage, throwValidationError } from 'src/common/helper';
+import { UpdateAdminDto } from './dto/requests/update-admin.dto';
 
 const scrypt = promisify(_scrypt);
 
@@ -58,13 +61,74 @@ export class AdminsService {
         return user;
     }
 
-    findOne(id: number) {
-        return this.repo.findOne({where: {id}}); 
+    async findOne(id: number) {
+        const admin = await this.repo.findOne({where: {id}}); 
+        if(!admin) {
+            throwValidationError('Admin not found.');
+        }
+        return admin;
     }
 
     find(email: string) {
         return this.repo.find({ where: { email } });
     }
+
+    async paginate(options: IPaginationOptions): Promise<Pagination<Admin>> {
+        const queryBuilder = this.repo.createQueryBuilder('c');
+        queryBuilder.orderBy('c.createdAt', 'DESC');
+
+        return paginate<Admin>(queryBuilder, options);
+    }
+
+    async create(createAdminDto: CreateAdminDto, file: Express.Multer.File) {
+        const hashPassword = await generatePassword(createAdminDto.password)
+        let fileName = null;
+        if(file) {
+            fileName = file.filename;
+        }
+        const adminInstance = this.repo.create({
+            name: createAdminDto.name,
+            email: createAdminDto.email,
+            image: fileName,
+            password: hashPassword
+        });
+        const admin = await this.repo.save(adminInstance);
+        return admin;
+    }
+
+    async update(updateAdminDto: UpdateAdminDto, id: number, file: Express.Multer.File) {
+        const admin = await this.findOne(id);
+        if(updateAdminDto.email) {
+            const existedAdmin = await this.repo.findOne({where: {email: updateAdminDto.email, id: Not(id)}});
+            if(existedAdmin) {
+                throwValidationError('Email has already exist.');
+            }
+        }
+        if(updateAdminDto.password) {
+            updateAdminDto.password = await generatePassword(updateAdminDto.password)
+        }else {
+            updateAdminDto.password = admin.password
+        }
+        if(file && admin.image) {
+            await removeImage('admins', admin.image);
+        }
+        Object.assign(admin, updateAdminDto);
+        if(file) {
+            admin.image = file.filename;
+        }
+        return this.repo.save(admin);
+    }
+
+    async remove(id: number) {
+        const admin = await this.findOne(id);
+        if(admin.image) {
+            await removeImage('admins', admin.image);
+        }
+        await this.repo.remove(admin);
+        return admin;
+    }
+
+
 
     async generateToken(payload) {
         return this.jwtService.signAsync(payload);
