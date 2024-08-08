@@ -1,4 +1,4 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Not, Repository } from 'typeorm';
@@ -9,8 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto } from './dto/requests/login-user.dto';
 import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { UpdateUserDto } from './dto/requests/update-user.dto';
-import { promises as fs } from 'fs';
-import { join } from 'path';
+import { generatePassword, removeImage, throwValidationError } from 'src/common/helper';
 
 const scrypt = promisify(_scrypt);
 
@@ -46,18 +45,12 @@ export class UsersService {
     async login(loginUserDto: LoginUserDto) {
         const [user] = await this.find(loginUserDto.email)
         if(!user) {
-            throw new HttpException(
-                { message: ['Your credentials is incorrect.'], error: 'Validation Error' },
-                HttpStatus.NOT_FOUND,
-            );
+            throwValidationError('Your credentials is incorrect.');
         }
         const [salt, storedHash] = user.password.split('.');
         const hash = (await scrypt(loginUserDto.password, salt, 32)) as Buffer;
         if(storedHash !== hash.toString('hex')) {
-            throw new HttpException(
-                { message: ['Your password is incorrect!'], error: 'Validation Error' },
-                HttpStatus.UNPROCESSABLE_ENTITY,
-            );
+            throwValidationError('Your password is incorrect!');
         }
         const token = await this.generateToken({ id: user.id, email: user.email })
         return {...user, access_token: token}
@@ -67,15 +60,12 @@ export class UsersService {
         if(updateUserDto.email) {
             const existedUser = await this.repo.findOne({where: {email: updateUserDto.email, id: Not(user.id)}});
             if(existedUser) {
-                throw new HttpException(
-                    { message: ['Email has already exist.'], error: 'Validation Error' },
-                    HttpStatus.UNPROCESSABLE_ENTITY,
-                );
+                throwValidationError('Email has already exist.');
             }
         }
         Object.assign(user, updateUserDto);
         if(file) {
-            await fs.unlink(join(__dirname, '..', '..', '..', 'uploads', 'users', user.image as string))
+            await removeImage('users', user.image);
             user.image = file.filename;
         }
         return this.repo.save(user);
@@ -84,10 +74,7 @@ export class UsersService {
     async findOne(id: number) {
         const user = await this.repo.findOne({where: {id}}); 
         if(!user) {
-          throw new HttpException(
-            { message: ['User not found.'], error: 'Not found' },
-            HttpStatus.NOT_FOUND,
-          );
+            throwValidationError('User not found.');
         }
         return user;
     }
@@ -106,7 +93,7 @@ export class UsersService {
     }
 
     async create(createUserDto: CreateUserDto, file: Express.Multer.File) {
-        const hashPassword = await this.generatePassword(createUserDto.password)
+        const hashPassword = await generatePassword(createUserDto.password)
         let fileName = null;
         if(file) {
             fileName = file.filename;
@@ -126,17 +113,14 @@ export class UsersService {
         if(updateUserDto.email) {
             const existedUser = await this.repo.findOne({where: {email: updateUserDto.email, id: Not(id)}});
             if(existedUser) {
-                throw new HttpException(
-                    { message: ['Email has already exist.'], error: 'Validation Error' },
-                    HttpStatus.UNPROCESSABLE_ENTITY,
-                );
+                throwValidationError('Email has already exist.');
             }
         }
         if(!updateUserDto.password) {
             updateUserDto.password = user.password
         }
         if(file && user.image) {
-            await fs.unlink(join(__dirname, '..', '..', '..', 'uploads', 'users', user.image as string))
+            await removeImage('users', user.image);
         }
         Object.assign(user, updateUserDto);
         if(file) {
@@ -148,24 +132,13 @@ export class UsersService {
     async removeUser(id: number) {
         const user = await this.findOne(id);
         if(user.image) {
-            await fs.unlink(join(__dirname, '..', '..', '..', 'uploads', 'users', user.image as string))
+            await removeImage('users', user.image);
         }
         await this.repo.remove(user);
         return user;
     }
 
-
-
-    // utils
-
     async generateToken(payload) {
         return this.jwtService.signAsync(payload);
-    }
-
-    async generatePassword(plainPassword: string) {
-        const salt = randomBytes(8).toString('hex');
-        const hash = (await scrypt(plainPassword, salt, 32)) as Buffer;
-        const hashPassword = salt + "." + hash.toString('hex');
-        return hashPassword;
     }
 }
