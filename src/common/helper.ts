@@ -20,6 +20,6 @@ export const generatePassword = async (plainPassword: string) => {
     return hashPassword;
 }
 
-export const removeImage = async (path: string, imageName: string) => {
+export const unlinkImage = async (path: string, imageName: string) => {
     await fs.unlink(join(__dirname, '..', '..', '..', 'uploads', path, imageName))
 }

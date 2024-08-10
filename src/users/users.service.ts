@@ -9,7 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto } from './dto/requests/login-user.dto';
 import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { UpdateUserDto } from './dto/requests/update-user.dto';
-import { generatePassword, removeImage, throwValidationError } from 'src/common/helper';
+import { generatePassword, unlinkImage, throwValidationError } from 'src/common/helper';
 
 const scrypt = promisify(_scrypt);
 
@@ -65,7 +65,7 @@ export class UsersService {
         }
         Object.assign(user, updateUserDto);
         if(file) {
-            await removeImage('users', user.image);
+            await unlinkImage('users', user.image);
             user.image = file.filename;
         }
         return this.repo.save(user);
@@ -123,7 +123,7 @@ export class UsersService {
             updateUserDto.password = user.password
         }
         if(file && user.image) {
-            await removeImage('users', user.image);
+            await unlinkImage('users', user.image);
         }
         Object.assign(user, updateUserDto);
         if(file) {
@@ -135,7 +135,7 @@ export class UsersService {
     async removeUser(id: number) {
         const user = await this.findOne(id);
         if(user.image) {
-            await removeImage('users', user.image);
+            await unlinkImage('users', user.image);
         }
         await this.repo.remove(user);
         return user;

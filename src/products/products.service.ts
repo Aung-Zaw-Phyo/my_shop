@@ -6,8 +6,8 @@ import { CategoriesService } from 'src/categories/categories.service';
 import { CreateProductDto } from './dto/requests/create-product.dto';
 import { UpdateProductDto } from './dto/requests/update-product.dto';
 import { Image } from './entities/image.entity';
-import { promises as fs } from 'fs';
-import { join } from 'path';
+import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
+import { unlinkImage } from 'src/common/helper';
 
 @Injectable()
 export class ProductsService {
@@ -17,113 +17,98 @@ export class ProductsService {
     private readonly catService: CategoriesService,
   ) {}
 
-  async create(data: CreateProductDto, files: Express.Multer.File[]) {
-    const categories = !data.categories ? null : await Promise.all(
-      data.categories.map(async id => {
-          const category = await this.catService.findOne(id);
-          return category;
-      }),
-    );
-    const product = new Product({
-      name: data.name,
-      description: data.description,
-      price: +data.price,
-      categories: categories,
-    });
-    const savedProduct = await this.repo.save(product);
-    if(files) {
-      await this.saveImages(files, savedProduct);
+    async paginate(options: IPaginationOptions): Promise<Pagination<Product>> {
+        const queryBuilder = this.repo.createQueryBuilder('c');
+        queryBuilder
+            .leftJoinAndSelect('c.categories', 'categories')
+            .leftJoinAndSelect('c.variants', 'variants')
+            .leftJoinAndSelect('c.images', 'images')
+            .groupBy('c.id')
+            .orderBy('c.createdAt', 'DESC');
+        return paginate<Product>(queryBuilder, options);
     }
-    return savedProduct;
-  }
 
-  async findAll() {
-    const products = await this.repo.find({
-      relations: ['categories', 'images']
-    });
-    const result = products.map(product => this.formatProductData(product));
-    return result;
-  }
-
-  async getProduct(id: number) {
-    const product = await this.repo.findOne({
-      where: {id}, 
-      relations: ['categories', 'variants', 'images'], 
-    }); 
-    if(!product) {
-      throw new HttpException(
-        { message: ['Product not found.'], error: 'Not found' },
-        HttpStatus.NOT_FOUND,
-      );
+    async findOne(id: number) {
+        const product = await this.repo.findOne({
+          where: {id}, 
+          relations: ['categories', 'variants', 'images'], 
+        }); 
+        if(!product) {
+        throw new HttpException(
+            { message: ['Product not found.'], error: 'Not found' },
+            HttpStatus.NOT_FOUND,
+        );
+        }
+        return product; 
     }
-    const result = this.formatProductData(product);
-    return result; 
-  }
 
-  async findOne(id: number) {
-    const product = await this.repo.findOne({where: {id: id}});
-    if(!product) {
-      throw new HttpException(
-        { message: ['Product not found.'], error: 'Not found' },
-        HttpStatus.NOT_FOUND,
-      );
+    async create(createProductDto: CreateProductDto, files: Express.Multer.File[]) {
+        const categories = !createProductDto.categories ? null : await Promise.all(
+            createProductDto.categories.map(async id => {
+                const category = await this.catService.findOne(id);
+                return category;
+            }),
+        );
+        const product = new Product({
+            name: createProductDto.name,
+            description: createProductDto.description,
+            price: +createProductDto.price,
+            categories: categories,
+        });
+        const savedProduct = await this.repo.save(product);
+        if(files) {
+            await this.saveImages(files, savedProduct);
+        }
+        return savedProduct;
     }
-    return product;
-  }
 
-  async update(id: number, data: UpdateProductDto, files: Express.Multer.File[]) {
-    const product = await this.findOne(id);
-    Object.assign(product, data);
-    if(data.categories) {
-      const categories = await Promise.all(
-        data.categories.map(async id => {
-            const category = await this.catService.findOne(id);
-            return category;
-        }),
-      );
-      product.categories = categories;
+    async update(id: number, updateProductDto: UpdateProductDto, files: Express.Multer.File[]) {
+        const product = await this.findOne(id);
+        if(files.length > 0) {
+            await this.removeImages(product.images);
+        }
+        Object.assign(product, updateProductDto);
+        if(updateProductDto.categories) {
+            const categories = await Promise.all(
+                updateProductDto.categories.map(async id => {
+                    const category = await this.catService.findOne(id);
+                    return category;
+                }),
+            );
+            product.categories = categories;
+        }
+        const updatedProduct = await this.repo.save(product);
+        if(files.length > 0) {
+            await this.saveImages(files, updatedProduct);
+        }
+        return updatedProduct;
     }
-    if(files) {
-      await this.saveImages(files, product);
+
+    async remove(id: number) {
+        const product = await this.findOne(id);
+        await product.images.map(async (image) => {
+            await unlinkImage('products', image.name as string);
+        })
+        await this.repo.remove(product);
+        return product;
     }
-    return this.repo.save(product);
-  }
 
-  async remove(id: number) {
-    const product = await this.findOne(id);
-    await this.repo.remove(product);
-    return product;
-  }
-
-  async removeImage(id: number) {
-    const image = await this.imageRepo.findOne({where: {id}});
-    if(!image) {
-      throw new HttpException(
-        {message: ["Product image not found."], error: "Not found"},
-        HttpStatus.NOT_FOUND,
-      )
+    async saveImages(files: Express.Multer.File[], product: Product) {
+        const images = files.map(file => {
+            const image = new Image({
+                name: file.filename,
+                product: product,
+            });
+            return this.imageRepo.save(image);
+        })
+        await Promise.all(images);
     }
-    await fs.unlink(join(__dirname, '..', '..', '..', 'uploads', 'products', image.name as string))
-    await this.imageRepo.remove(image);
-    return null;
-  }
 
-  formatProductData(product: Product) {
-    product.images = product.images.map(image => {
-      image['path'] = process.env.APP_URL + `/products/${product.id}/images/` + image.name;
-      return image;
-    })
-    return product
-  }
-
-  async saveImages(files: Express.Multer.File[], product: Product) {
-    const images = files.map(file => {
-      const image = new Image({
-        name: file.filename,
-        product: product,
-      });
-      return this.imageRepo.save(image);
-    })
-    await Promise.all(images);
-  }
+    async removeImages(images: Image[]) {
+        images.map(async (img) => {
+            await unlinkImage('products', img.name as string);
+            const image = await this.imageRepo.findOne({where: {id: img.id}});
+            await this.imageRepo.remove(image);
+        });
+    }
 }

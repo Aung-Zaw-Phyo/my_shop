@@ -1,12 +1,10 @@
-import { Expose, Type } from "class-transformer";
+import { Expose, Transform, Type } from "class-transformer";
 import { CategoryDto } from "src/categories/dto/responses/category.dto";
-import { Category } from "src/categories/entities/category.entity";
-import { Image } from "src/products/entities/image.entity";
 import { VariantDto } from "src/variants/dto/responses/variant.dto";
-import { Variant } from "src/variants/entities/variant.entity";
 import { ImageDto } from "./image.dto";
+import { AbstractDto } from "src/common/dto/abstract.dto";
 
-export class ProductDto {
+export class ProductDto extends AbstractDto {
     @Expose()
     id: number;
 

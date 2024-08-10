@@ -8,7 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginAdminDto } from './dto/requests/login-admin.dto';
 import { CreateAdminDto } from './dto/requests/create-admin.dto';
 import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
-import { generatePassword, removeImage, throwValidationError } from 'src/common/helper';
+import { generatePassword, unlinkImage, throwValidationError } from 'src/common/helper';
 import { UpdateAdminDto } from './dto/requests/update-admin.dto';
 
 const scrypt = promisify(_scrypt);
@@ -110,7 +110,7 @@ export class AdminsService {
             updateAdminDto.password = admin.password
         }
         if(file && admin.image) {
-            await removeImage('admins', admin.image);
+            await unlinkImage('admins', admin.image);
         }
         Object.assign(admin, updateAdminDto);
         if(file) {
@@ -122,7 +122,7 @@ export class AdminsService {
     async remove(id: number) {
         const admin = await this.findOne(id);
         if(admin.image) {
-            await removeImage('admins', admin.image);
+            await unlinkImage('admins', admin.image);
         }
         await this.repo.remove(admin);
         return admin;

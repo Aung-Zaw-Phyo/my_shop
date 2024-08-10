@@ -9,6 +9,6 @@ export class Category extends AbstractEntity<Category> {
     @Index({ unique: true })
     name: string;
 
-    @ManyToMany(() => Product, product => product.categories, { cascade: true, onDelete: 'CASCADE' })
+    @ManyToMany(() => Product, product => product.categories)
     products: Product[];
 }   
