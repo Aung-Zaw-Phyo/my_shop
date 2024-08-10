@@ -1,6 +1,8 @@
-import { Expose } from "class-transformer";
+import { Expose, Type } from "class-transformer";
+import { AbstractDto } from "src/common/dto/abstract.dto";
+import { ProductDto } from "src/products/dto/responses/product.dto";
 
-export class VariantDto {
+export class VariantDto extends AbstractDto {
     @Expose()
     id: number;
 
@@ -12,4 +14,8 @@ export class VariantDto {
 
     @Expose()
     stock: number;
+
+    @Expose()
+    @Type(() => ProductDto)
+    product?: ProductDto; 
 }
