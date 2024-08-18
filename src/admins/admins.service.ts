@@ -7,9 +7,10 @@ import { Not, Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { LoginAdminDto } from './dto/requests/login-admin.dto';
 import { CreateAdminDto } from './dto/requests/create-admin.dto';
-import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { generatePassword, unlinkImage, throwValidationError } from 'src/common/helper';
 import { UpdateAdminDto } from './dto/requests/update-admin.dto';
+import { paginate, PaginateConfig, Paginated, PaginateQuery } from 'nestjs-paginate';
+import { paginate_items_limit, paginate_max_limit } from 'src/common/constants';
 
 const scrypt = promisify(_scrypt);
 
@@ -73,11 +74,15 @@ export class AdminsService {
         return this.repo.find({ where: { email } });
     }
 
-    async paginate(options: IPaginationOptions): Promise<Pagination<Admin>> {
-        const queryBuilder = this.repo.createQueryBuilder('c');
-        queryBuilder.orderBy('c.createdAt', 'DESC');
-
-        return paginate<Admin>(queryBuilder, options);
+    async getAdmins(query: PaginateQuery): Promise<Paginated<Admin>> {
+        const config: PaginateConfig<Admin> = {
+            sortableColumns: ['id', 'name', 'email'],
+            maxLimit: paginate_items_limit,
+            defaultSortBy: [['createdAt', 'DESC']]
+        }
+        query.limit = query.limit == 0 ? paginate_max_limit : query.limit;
+        const result = await paginate<Admin>(query, this.repo, config)
+        return result;
     }
 
     async create(createAdminDto: CreateAdminDto, file: Express.Multer.File) {

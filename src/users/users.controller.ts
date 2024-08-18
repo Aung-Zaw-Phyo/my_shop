@@ -14,6 +14,7 @@ import { UpdateUserDto } from './dto/requests/update-user.dto';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
+import { Paginate, Paginated, PaginateQuery } from 'nestjs-paginate';
 
 @Controller('users')
 export class UsersController {
@@ -65,16 +66,8 @@ export class UsersController {
     @Get('/')   
     @Serialize(UserDto)
     @UseGuards(AdminGuard)
-    getUsers(
-        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
-        @Query('limit', new DefaultValuePipe(paginate_items_limit), ParseIntPipe) limit: number = paginate_items_limit,
-    ): Promise<Pagination<User>> {
-        limit = limit > 100 ? 100 : limit;
-        return this.usersService.paginate({
-          page,
-          limit,
-          route: process.env.APP_URL + '/users',
-        });
+    getUsers(@Paginate() query: PaginateQuery): Promise<Paginated<User>> {
+      return this.usersService.getUsers(query);
     }
 
     @Get(':id')

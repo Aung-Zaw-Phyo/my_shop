@@ -8,6 +8,7 @@ import { paginate_items_limit } from 'src/common/constants';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { AdminGuard } from 'src/common/guards/admin.guard';
 import { Variant } from './entities/variant.entity';
+import { Paginate, Paginated, PaginateQuery } from 'nestjs-paginate';
 
 @Controller('variants')
 export class VariantsController {
@@ -15,22 +16,14 @@ export class VariantsController {
   @Get()
   @UseGuards(AdminGuard)
   @Serialize(VariantDto, "Fetched variants successfully.")
-  findAll(
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
-    @Query('limit', new DefaultValuePipe(paginate_items_limit), ParseIntPipe) limit: number = paginate_items_limit,
-  ): Promise<Pagination<Variant>> {
-    limit = limit > 100 ? 100 : limit;
-    return this.variantsService.paginate({
-      page,
-      limit,
-      route: process.env.APP_URL + '/variants',
-    });
+  getVariants(@Paginate() query: PaginateQuery): Promise<Paginated<Variant>> {
+    return this.variantsService.getVariants(query);
   }
 
   @Get(':id')
   @UseGuards(AdminGuard)
   @Serialize(VariantDto)
-  getCategory(@Param('id') id: string) {
+  getVariant(@Param('id') id: string) {
     return this.variantsService.findOne(+id);
   }
 

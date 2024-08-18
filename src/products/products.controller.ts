@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, Put, UploadedFiles, UseInterceptors, Res, Query, DefaultValuePipe, ParseIntPipe, UseGuards } from '@nestjs/common';
-import { ProductsService } from './products.service';
+import { CustomPaginationMeta, ProductsService } from './products.service';
 import { CreateProductDto } from './dto/requests/create-product.dto';
 import { UpdateProductDto } from './dto/requests/update-product.dto';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
@@ -11,23 +11,16 @@ import { paginate_items_limit } from 'src/common/constants';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { Product } from './entities/product.entity';
 import { AdminGuard } from 'src/common/guards/admin.guard';
+import { Paginate, Paginated, PaginateQuery } from 'nestjs-paginate';
 
 @Controller('products')
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  @Get()
+  @Get('/')
   @Serialize(ProductDto, "Fetch products successfully.")
-  getProducts(
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
-    @Query('limit', new DefaultValuePipe(paginate_items_limit), ParseIntPipe) limit: number = paginate_items_limit,
-  ): Promise<Pagination<Product>> {
-    limit = limit > 100 ? 100 : limit;
-    return this.productsService.paginate({
-      page,
-      limit,
-      route: process.env.APP_URL + '/products',
-    });
+  getProducts(@Paginate() query: PaginateQuery): Promise<Paginated<Product>> {
+    return this.productsService.getProducts(query);
   }
 
   @Get(':id')

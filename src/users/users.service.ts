@@ -7,9 +7,10 @@ import { promisify } from 'util';
 import { scrypt as _scrypt, randomBytes } from 'crypto';
 import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto } from './dto/requests/login-user.dto';
-import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { UpdateUserDto } from './dto/requests/update-user.dto';
 import { generatePassword, unlinkImage, throwValidationError } from 'src/common/helper';
+import { paginate, PaginateConfig, Paginated, PaginateQuery } from 'nestjs-paginate';
+import { paginate_items_limit, paginate_max_limit } from 'src/common/constants';
 
 const scrypt = promisify(_scrypt);
 
@@ -85,11 +86,15 @@ export class UsersService {
 
     // admin
     
-    async paginate(options: IPaginationOptions): Promise<Pagination<User>> {
-        const queryBuilder = this.repo.createQueryBuilder('c');
-        queryBuilder.orderBy('c.createdAt', 'DESC');
-
-        return paginate<User>(queryBuilder, options);
+    async getUsers(query: PaginateQuery): Promise<Paginated<User>> {
+        const config: PaginateConfig<User> = {
+            sortableColumns: ['id', 'name', 'email'],
+            maxLimit: paginate_items_limit,
+            defaultSortBy: [['createdAt', 'DESC']]
+        }
+        query.limit = query.limit == 0 ? paginate_max_limit : query.limit;
+        const result = await paginate<User>(query, this.repo, config)
+        return result;
     }
 
     async create(createUserDto: CreateUserDto, file: Express.Multer.File) {

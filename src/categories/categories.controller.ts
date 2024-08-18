@@ -8,6 +8,7 @@ import { Pagination } from 'nestjs-typeorm-paginate';
 import { Category } from './entities/category.entity';
 import { paginate_items_limit } from 'src/common/constants';
 import { AdminGuard } from 'src/common/guards/admin.guard';
+import { Paginate, Paginated, PaginateQuery } from 'nestjs-paginate';
 
 @Controller('categories')
 export class CategoriesController {
@@ -22,16 +23,8 @@ export class CategoriesController {
 
   @Get()
   @Serialize(CategoryDto, "Categories fetched successfully.")
-  findAll(
-    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
-    @Query('limit', new DefaultValuePipe(paginate_items_limit), ParseIntPipe) limit: number = paginate_items_limit,
-  ): Promise<Pagination<Category>> {
-    limit = limit > 100 ? 100 : limit;
-    return this.categoriesService.paginate({
-      page,
-      limit,
-      route: process.env.APP_URL + '/categories',
-    });
+  getCategories(@Paginate() query: PaginateQuery): Promise<Paginated<Category>> {
+    return this.categoriesService.getCategories(query);
   }
 
   @Get(':id')

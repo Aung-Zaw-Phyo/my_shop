@@ -4,13 +4,26 @@ import { Category } from './entities/category.entity';
 import { Not, Repository } from 'typeorm';
 import { CreateCategoryDto } from './dto/requests/create-category.dto';
 import { UpdateCategoryDto } from './dto/requests/update-category.dto';
-import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
+import { paginate, PaginateConfig, Paginated, PaginateQuery } from 'nestjs-paginate';
+import { paginate_items_limit, paginate_max_limit } from 'src/common/constants';
 
 @Injectable()
 export class CategoriesService {
   constructor(
     @InjectRepository(Category) private readonly repo: Repository<Category>,
   ) {}
+
+  async getCategories(query: PaginateQuery): Promise<Paginated<Category>> {
+    const config: PaginateConfig<Category> = {
+        sortableColumns: ['id', 'name'],
+        maxLimit: paginate_items_limit,
+        defaultSortBy: [['createdAt', 'DESC']]
+    }
+    query.limit = query.limit == 0 ? paginate_max_limit : query.limit;
+    const result = await paginate<Category>(query, this.repo, config)
+    return result;
+  }
+
 
   async create(createCategoryDto: CreateCategoryDto) {
     const category = new Category({
@@ -22,13 +35,6 @@ export class CategoriesService {
 
   findAll() {
     return this.repo.find();
-  }
-
-  async paginate(options: IPaginationOptions): Promise<Pagination<Category>> {
-    const queryBuilder = this.repo.createQueryBuilder('c');
-    queryBuilder.orderBy('c.createdAt', 'DESC');
-
-    return paginate<Category>(queryBuilder, options);
   }
 
   async findOne(id: number) {

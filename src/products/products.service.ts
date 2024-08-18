@@ -6,8 +6,19 @@ import { CategoriesService } from 'src/categories/categories.service';
 import { CreateProductDto } from './dto/requests/create-product.dto';
 import { UpdateProductDto } from './dto/requests/update-product.dto';
 import { Image } from './entities/image.entity';
-import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { unlinkImage } from 'src/common/helper';
+import { paginate, PaginateConfig, Paginated, PaginateQuery } from 'nestjs-paginate';
+import { paginate_items_limit, paginate_max_limit } from 'src/common/constants';
+
+export class CustomPaginationMeta {
+    constructor(
+        public readonly totalItems: number,
+        public readonly itemCount: number,
+        public readonly itemsPerPage: number,
+        public readonly totalPages: number,
+        public readonly currentPage: number,
+    ) {}
+}
 
 @Injectable()
 export class ProductsService {
@@ -17,15 +28,17 @@ export class ProductsService {
     private readonly catService: CategoriesService,
   ) {}
 
-    async paginate(options: IPaginationOptions): Promise<Pagination<Product>> {
-        const queryBuilder = this.repo.createQueryBuilder('c');
-        queryBuilder
-            .leftJoinAndSelect('c.categories', 'categories')
-            .leftJoinAndSelect('c.variants', 'variants')
-            .leftJoinAndSelect('c.images', 'images')
-            .groupBy('c.id')
-            .orderBy('c.createdAt', 'DESC');
-        return paginate<Product>(queryBuilder, options);
+    async getProducts(query: PaginateQuery): Promise<Paginated<Product>> {
+        const config: PaginateConfig<Product> = {
+            relations: ['categories', 'variants', 'images'],
+            sortableColumns: ['id', 'name'],
+            maxLimit: paginate_max_limit,
+            defaultLimit: paginate_items_limit,
+            defaultSortBy: [['createdAt', 'DESC']]
+        }
+        query.limit = query.limit == 0 ? paginate_max_limit : query.limit;
+        const result = await paginate<Product>(query, this.repo, config)
+        return result;
     }
 
     async findOne(id: number) {

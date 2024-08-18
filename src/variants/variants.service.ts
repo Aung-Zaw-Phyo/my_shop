@@ -5,8 +5,9 @@ import { ProductsService } from 'src/products/products.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Variant } from './entities/variant.entity';
 import { Repository } from 'typeorm';
-import { IPaginationOptions, paginate, Pagination } from 'nestjs-typeorm-paginate';
 import { throwValidationError } from 'src/common/helper';
+import { paginate, PaginateConfig, Paginated, PaginateQuery } from 'nestjs-paginate';
+import { paginate_items_limit, paginate_max_limit } from 'src/common/constants';
 
 @Injectable()
 export class VariantsService {
@@ -15,14 +16,16 @@ export class VariantsService {
         private readonly productService: ProductsService
     ) {}
 
-    async paginate(options: IPaginationOptions): Promise<Pagination<Variant>> {
-        const queryBuilder = this.repo.createQueryBuilder('c');
-        queryBuilder
-            .leftJoinAndSelect('c.product', 'product')
-            .groupBy('c.id')
-            .orderBy('c.createdAt', 'DESC');
-
-        return paginate<Variant>(queryBuilder, options);
+    async getVariants(query: PaginateQuery): Promise<Paginated<Variant>> {
+        const config: PaginateConfig<Variant> = {
+            relations: ['product'],
+            sortableColumns: ['id', 'color'],
+            maxLimit: paginate_items_limit,
+            defaultSortBy: [['createdAt', 'DESC']]
+        }
+        query.limit = query.limit == 0 ? paginate_max_limit : query.limit;
+        const result = await paginate<Variant>(query, this.repo, config)
+        return result;
     }
 
     async findOne(id: number) {

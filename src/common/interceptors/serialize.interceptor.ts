@@ -29,14 +29,14 @@ export class SerializeInterceptor<T> implements NestInterceptor {
       map((data: any): ResponseFormat<T> => {
         const response = context.switchToHttp().getResponse();
         const statusCode = response.statusCode;
-        if(data.items && data.meta && data.links) {
+        if(data.data && data.meta && data.links) {
           return {
             success: statusCode >= 200 && statusCode < 300,
             messages: [this.message],
             error: null,
             statusCode,
             data: {
-              items: plainToClass(this.dto, data.items, {
+              items: plainToClass(this.dto, data.data, {
                 excludeExtraneousValues: true,
               }),
               meta: data.meta,

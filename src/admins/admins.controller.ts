@@ -13,6 +13,7 @@ import { paginate_items_limit } from 'src/common/constants';
 import { Pagination } from 'nestjs-typeorm-paginate';
 import { Admin } from './entities/admin.entity';
 import { UpdateAdminDto } from './dto/requests/update-admin.dto';
+import { Paginate, Paginated, PaginateQuery } from 'nestjs-paginate';
 
 @Controller('admins')
 export class AdminsController {
@@ -34,16 +35,8 @@ export class AdminsController {
     @Get('/')   
     @Serialize(AdminDto)
     @UseGuards(AdminGuard)
-    getAdmins(
-        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number = 1,
-        @Query('limit', new DefaultValuePipe(paginate_items_limit), ParseIntPipe) limit: number = paginate_items_limit,
-    ): Promise<Pagination<Admin>> {
-        limit = limit > 100 ? 100 : limit;
-        return this.adminsService.paginate({
-          page,
-          limit,
-          route: process.env.APP_URL + '/admins',
-        });
+    getAdmins(@Paginate() query: PaginateQuery): Promise<Paginated<Admin>> {
+      return this.adminsService.getAdmins(query);
     }
 
     @Get(':id')
