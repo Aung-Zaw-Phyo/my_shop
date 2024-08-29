@@ -9,7 +9,6 @@ import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
 import { VariantsModule } from './variants/variants.module';
 import { CartsModule } from './carts/carts.module';
-import { CartItemsModule } from './cart_items/cart_items.module';
 import { IsUniqueConstraint } from './common/validators/is-unique';
 
 @Module({
@@ -33,7 +32,8 @@ import { IsUniqueConstraint } from './common/validators/is-unique';
         UsersModule, 
         CategoriesModule, 
         ProductsModule, 
-        VariantsModule, CartsModule, CartItemsModule, 
+        VariantsModule, 
+        CartsModule, 
     ],
     controllers: [AppController],
     providers: [

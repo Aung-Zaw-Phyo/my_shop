@@ -1,4 +1,3 @@
-import { CartItem } from "src/cart_items/entities/cart_item.entity";
 import { AbstractEntity } from "src/common/database/abstract.entity";
 import { Product } from "src/products/entities/product.entity";
 import { Column, Entity, ManyToOne, OneToMany } from "typeorm";
