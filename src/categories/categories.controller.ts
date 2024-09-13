@@ -4,7 +4,6 @@ import { CreateCategoryDto } from './dto/requests/create-category.dto';
 import { UpdateCategoryDto } from './dto/requests/update-category.dto';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 import { CategoryDto } from './dto/responses/category.dto';
-import { Pagination } from 'nestjs-typeorm-paginate';
 import { Category } from './entities/category.entity';
 import { paginate_items_limit } from 'src/common/constants';
 import { AdminGuard } from 'src/common/guards/admin.guard';

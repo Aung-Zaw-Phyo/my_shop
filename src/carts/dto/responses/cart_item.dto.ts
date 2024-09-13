@@ -10,6 +10,9 @@ export class CartItemDto extends AbstractDto {
     quantity: number;
 
     @Expose()
+    amount: number;
+
+    @Expose()
     @Type(() => VariantDto)
     variant: VariantDto[]; 
 }

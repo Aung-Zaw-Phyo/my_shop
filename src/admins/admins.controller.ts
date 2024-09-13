@@ -10,7 +10,6 @@ import { extname } from 'path';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { paginate_items_limit } from 'src/common/constants';
-import { Pagination } from 'nestjs-typeorm-paginate';
 import { Admin } from './entities/admin.entity';
 import { UpdateAdminDto } from './dto/requests/update-admin.dto';
 import { Paginate, Paginated, PaginateQuery } from 'nestjs-paginate';

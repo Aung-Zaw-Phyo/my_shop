@@ -45,10 +45,12 @@ export class CartsService {
         cart: cart,
         variant: variant,
         quantity: createCartItemDto.quantity,
+        amount: createCartItemDto.quantity * variant.product.price,
       });
       await this.cartItemRepo.save(newItemInstance);
     } else {
       item.quantity += createCartItemDto.quantity;
+      item.amount += createCartItemDto.quantity * variant.product.price;
       await this.cartItemRepo.save(item);
     }
     return this.getCart(user);
@@ -67,6 +69,7 @@ export class CartsService {
       await this.cartItemRepo.remove(item);
     }else {
       item.quantity -= createCartItemDto.quantity;
+      item.amount -= createCartItemDto.quantity * variant.product.price;
       await this.cartItemRepo.save(item);
     }
     return this.getCart(user);

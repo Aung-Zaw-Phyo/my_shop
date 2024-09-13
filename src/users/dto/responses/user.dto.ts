@@ -12,6 +12,11 @@ export class UserDto extends AbstractDto {
     email: string;
 
     @Expose() 
-    @Transform(({value}) => value ? `${process.env.APP_URL}/uploads/users/${value}`: null)
+    @Transform((value) => {
+        const image = value['obj']['image'];
+        return image ? 
+                `${process.env.APP_URL}/uploads/users/${image}`: 
+                `https://ui-avatars.com/api/?background=222E41&color=fff&name=${value['obj']['name']}`;
+    })
     image: string;
 }

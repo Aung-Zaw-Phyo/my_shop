@@ -10,6 +10,8 @@ import { ProductsModule } from './products/products.module';
 import { VariantsModule } from './variants/variants.module';
 import { CartsModule } from './carts/carts.module';
 import { IsUniqueConstraint } from './common/validators/is-unique';
+import { OrdersModule } from './orders/orders.module';
+import { StripeModule } from './stripe/stripe.module';
 
 @Module({
     imports: [
@@ -34,6 +36,8 @@ import { IsUniqueConstraint } from './common/validators/is-unique';
         ProductsModule, 
         VariantsModule, 
         CartsModule, 
+        OrdersModule, 
+        StripeModule, 
     ],
     controllers: [AppController],
     providers: [

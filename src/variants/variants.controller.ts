@@ -5,7 +5,6 @@ import { UpdateVariantDto } from './dto/requests/update-variant.dto';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 import { VariantDto } from './dto/responses/variant.dto';
 import { paginate_items_limit } from 'src/common/constants';
-import { Pagination } from 'nestjs-typeorm-paginate';
 import { AdminGuard } from 'src/common/guards/admin.guard';
 import { Variant } from './entities/variant.entity';
 import { Paginate, Paginated, PaginateQuery } from 'nestjs-paginate';

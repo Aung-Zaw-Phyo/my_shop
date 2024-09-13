@@ -1,6 +1,7 @@
 import { Cart } from "src/carts/entities/cart.entity";
 import { AbstractEntity } from "src/common/database/abstract.entity";
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Order } from "src/orders/entities/order.entity";
+import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class User extends AbstractEntity<User> {
@@ -21,4 +22,7 @@ export class User extends AbstractEntity<User> {
 
     @OneToOne(() => Cart, (cart) => cart.user, { cascade: true, onDelete: 'CASCADE' })
     cart: Cart;
+
+    @OneToMany(() => Order, (order) => order.user, { cascade: true, onDelete: 'CASCADE' })
+    orders: Order[];
 }

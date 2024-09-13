@@ -64,7 +64,10 @@ export class UsersService {
                 throwValidationError('Email has already exist.');
             }
         }
-        Object.assign(user, updateUserDto);
+        Object.assign(user, {
+            name: updateUserDto.name,
+            email: updateUserDto.email,
+        });
         if(file) {
             await unlinkImage('users', user.image);
             user.image = file.filename;

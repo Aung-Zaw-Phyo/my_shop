@@ -7,8 +7,6 @@ import { ProductDto } from './dto/responses/product.dto';
 import { extname, join } from 'path';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { paginate_items_limit } from 'src/common/constants';
-import { Pagination } from 'nestjs-typeorm-paginate';
 import { Product } from './entities/product.entity';
 import { AdminGuard } from 'src/common/guards/admin.guard';
 import { Paginate, Paginated, PaginateQuery } from 'nestjs-paginate';

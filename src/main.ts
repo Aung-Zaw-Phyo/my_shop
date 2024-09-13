@@ -5,9 +5,11 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { useContainer } from 'class-validator';
 import { join } from 'path';
 import * as express from 'express';
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
+    app.use('/stripe/webhook', bodyParser.raw({ type: 'application/json' }));
     app.useGlobalFilters(new HttpExceptionFilter());
     app.useGlobalPipes(
         new ValidationPipe({

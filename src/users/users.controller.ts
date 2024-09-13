@@ -7,7 +7,6 @@ import { UserDto } from './dto/responses/user.dto';
 import { AuthUserDto } from './dto/responses/auth-user.dto';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';
 import { paginate_items_limit } from 'src/common/constants';
-import { Pagination } from 'nestjs-typeorm-paginate';
 import { User } from './entities/user.entity';
 import { AdminGuard } from 'src/common/guards/admin.guard';
 import { UpdateUserDto } from './dto/requests/update-user.dto';
