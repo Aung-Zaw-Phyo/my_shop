@@ -7,7 +7,7 @@ import { CreateProductDto } from './dto/requests/create-product.dto';
 import { UpdateProductDto } from './dto/requests/update-product.dto';
 import { Image } from './entities/image.entity';
 import { unlinkImage } from 'src/common/helper';
-import { paginate, PaginateConfig, Paginated, PaginateQuery } from 'nestjs-paginate';
+import { FilterOperator, paginate, PaginateConfig, Paginated, PaginateQuery } from 'nestjs-paginate';
 import { paginate_items_limit, paginate_max_limit } from 'src/common/constants';
 
 export class CustomPaginationMeta {
@@ -29,12 +29,19 @@ export class ProductsService {
   ) {}
 
     async getProducts(query: PaginateQuery): Promise<Paginated<Product>> {
+
         const config: PaginateConfig<Product> = {
             relations: ['categories', 'variants', 'images'],
             sortableColumns: ['id', 'name'],
             maxLimit: paginate_max_limit,
             defaultLimit: paginate_items_limit,
-            defaultSortBy: [['createdAt', 'DESC']]
+            defaultSortBy: [['createdAt', 'DESC']],
+            searchableColumns: ['name']
+        }
+        if(query.filter && query.filter['categories.id']){
+            config.filterableColumns =  {
+                'categories.id': [FilterOperator.EQ],
+            }
         }
         query.limit = query.limit == 0 ? paginate_max_limit : query.limit;
         const result = await paginate<Product>(query, this.repo, config)
