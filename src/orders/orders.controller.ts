@@ -14,15 +14,15 @@ export class OrdersController {
   @Get()
   @Serialize(OrderDto)
   @UseGuards(AuthGuard)
-  getOrders(@Request() req, @Paginate() query: PaginateQuery): Promise<Paginated<Order>> {
-    return this.ordersService.getOrders(req.user, query);
+  getUserOrders(@Request() req, @Paginate() query: PaginateQuery): Promise<Paginated<Order>> {
+    return this.ordersService.getUserOrders(req.user, query);
   }
 
   @Get(":id")
   @Serialize(OrderDetailsDto)
   @UseGuards(AuthGuard)
-  getOrderDetails(@Request() req, @Param('id') id: string) {
-    return this.ordersService.getOrderDetails(req.user, +id);
+  getUserOrderDetails(@Request() req, @Param('id') id: string) {
+    return this.ordersService.getUserOrderDetails(req.user, +id);
   }
 
   @Get('/check/:sessionId')
@@ -31,5 +31,4 @@ export class OrdersController {
   checkOrder(@Param('sessionId') sessionId: string) {
     return this.ordersService.checkOrder(sessionId);
   }
-
 }

@@ -7,10 +7,12 @@ import { OrderItem } from './entities/order_item.entity';
 import { UsersModule } from 'src/users/users.module';
 import { VariantsModule } from 'src/variants/variants.module';
 import { CartsModule } from 'src/carts/carts.module';
+import { AdminsModule } from 'src/admins/admins.module';
+import { OrdersAdminController } from './orders-admin.controller';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Order, OrderItem]), UsersModule, CartsModule, VariantsModule],
-  controllers: [OrdersController],
+  imports: [TypeOrmModule.forFeature([Order, OrderItem]), UsersModule, AdminsModule, CartsModule, VariantsModule],
+  controllers: [OrdersController, OrdersAdminController],
   providers: [OrdersService],
   exports: [OrdersService]
 })

@@ -1,7 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
-import Stripe from 'stripe';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Order } from './entities/order.entity';
 import { Repository } from 'typeorm';
@@ -14,6 +11,7 @@ import { User } from 'src/users/entities/user.entity';
 import { paginate, PaginateConfig, Paginated, PaginateQuery } from 'nestjs-paginate';
 import { paginate_items_limit, paginate_max_limit } from 'src/common/constants';
 import { ShippingAddressType } from './types/shipping_address.type';
+import { OrderStatusEnum } from './enums/order_status.enum';
 
 @Injectable()
 export class OrdersService {  
@@ -24,7 +22,7 @@ export class OrdersService {
     private readonly usersService: UsersService,
   ) {}
 
-  async getOrders(user: User, query: PaginateQuery): Promise<Paginated<Order>> {
+  async getUserOrders(user: User, query: PaginateQuery): Promise<Paginated<Order>> {
     const config: PaginateConfig<Order> = {
       relations: [],
       sortableColumns: ['id', 'orderNumber'],
@@ -38,7 +36,7 @@ export class OrdersService {
     return result;
   }
 
-  async getOrderDetails(user: User, id: number) {
+  async getUserOrderDetails(user: User, id: number) {
     const order = await this.orderRepo.findOne({
       where: {id: id, user: {id: user.id}}, 
       relations: ['items'], 
@@ -107,4 +105,44 @@ export class OrdersService {
     }
     return orderNumber;
   }
+
+  // Admin
+  async getOrders(query: PaginateQuery): Promise<Paginated<Order>> {
+    const config: PaginateConfig<Order> = {
+      relations: ['user'],
+      sortableColumns: ['id', 'orderNumber'],
+      maxLimit: paginate_max_limit,
+      defaultLimit: paginate_items_limit,
+      defaultSortBy: [['createdAt', 'DESC']],
+    }
+    query.limit = query.limit == 0 ? paginate_max_limit : query.limit;
+    const result = await paginate<Order>(query, this.orderRepo, config)
+    return result;
+  }
+
+  async getOrderDetails(id: number) {
+    const order = await this.orderRepo.findOne({
+      where: {id: id}, 
+      relations: ['user', 'items'], 
+    }); 
+    if(!order) {
+      throwValidationError('Order not found.');
+    }
+    return order; 
+  }
+
+  async toggleOrderStatus(id: number) {
+    const order = await this.orderRepo.findOne({where: {id: id}}); 
+    if(!order) {
+      throwValidationError('Order not found.');
+    }
+    if(order.status === OrderStatusEnum.pending) {
+      order.status = OrderStatusEnum.complete
+    }else {
+      order.status = OrderStatusEnum.pending
+    }
+    const result = await this.orderRepo.save(order);
+    return result;
+  }
+
 }

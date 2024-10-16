@@ -1,8 +1,8 @@
 import { Expose, Transform, Type } from "class-transformer";
 import { AbstractDto } from "src/common/dto/abstract.dto";
-import { OrderItemDto } from "./order_item.dto";
 import { OrderStatusEnum } from "src/orders/enums/order_status.enum";
 import { ShippingAddressType } from "src/orders/types/shipping_address.type";
+import { UserDto } from "src/users/dto/responses/user.dto";
 
 export class OrderDto extends AbstractDto {
     @Expose()
@@ -16,6 +16,10 @@ export class OrderDto extends AbstractDto {
 
     @Expose()
     status: OrderStatusEnum;
+
+    @Expose()
+    @Type(() => UserDto)
+    user: UserDto;
 
     @Expose()
     @Transform(({value}) => {
