@@ -8,25 +8,23 @@ import { Order } from './entities/order.entity';
 import { OrderDetailsDto } from './dto/responses/order_details.dto';
 
 @Controller('orders')
+@UseGuards(AuthGuard)
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
   
   @Get()
   @Serialize(OrderDto)
-  @UseGuards(AuthGuard)
   getUserOrders(@Request() req, @Paginate() query: PaginateQuery): Promise<Paginated<Order>> {
     return this.ordersService.getUserOrders(req.user, query);
   }
 
   @Get(":id")
   @Serialize(OrderDetailsDto)
-  @UseGuards(AuthGuard)
   getUserOrderDetails(@Request() req, @Param('id') id: string) {
     return this.ordersService.getUserOrderDetails(req.user, +id);
   }
 
   @Get('/check/:sessionId')
-  @UseGuards(AuthGuard)
   @Serialize(Number)
   checkOrder(@Param('sessionId') sessionId: string) {
     return this.ordersService.checkOrder(sessionId);

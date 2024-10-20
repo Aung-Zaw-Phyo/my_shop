@@ -75,6 +75,7 @@ export class OrdersService {
     });
     const order = await this.orderRepo.save(orderInstance)
     await this.saveOrderItems(cart.items, order);
+    await this.cartsService.emptyTheCart(user);
   }
 
   async saveOrderItems(items: CartItem[], order: Order) {

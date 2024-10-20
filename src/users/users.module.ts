@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { AdminsModule } from 'src/admins/admins.module';
+import { UsersAdminController } from './users-admin.controller';
 
 @Module({
   imports: [
@@ -12,11 +13,11 @@ import { AdminsModule } from 'src/admins/admins.module';
     JwtModule.register({
       global: true,
       secret: 'my_secret',
-      signOptions: { expiresIn: '36000s' },
+      signOptions: { expiresIn: '30d' },
     }),
     AdminsModule,
   ],
-  controllers: [UsersController],
+  controllers: [UsersController, UsersAdminController],
   providers: [UsersService],
   exports: [UsersService],
 })

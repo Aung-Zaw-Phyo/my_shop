@@ -74,4 +74,9 @@ export class CartsService {
     }
     return this.getCart(user);
   }
+
+  async emptyTheCart(user: User) {
+    const cart = await this.getCart(user);
+    this.cartRepo.delete(cart.id);
+  }
 }

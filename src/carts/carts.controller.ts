@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, UseGuards, Request } from '@nestjs/common';
 import { CartsService } from './carts.service';
 import { AuthGuard } from 'src/common/guards/auth.guard';
 import { Serialize } from 'src/common/interceptors/serialize.interceptor';

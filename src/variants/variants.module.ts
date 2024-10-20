@@ -5,10 +5,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Variant } from './entities/variant.entity';
 import { ProductsModule } from 'src/products/products.module';
 import { AdminsModule } from 'src/admins/admins.module';
+import { VariantsAdminController } from './variants-admin.controller';
 
 @Module({ 
   imports: [TypeOrmModule.forFeature([Variant]), AdminsModule, ProductsModule],
-  controllers: [VariantsController],
+  controllers: [VariantsController, VariantsAdminController],
   providers: [VariantsService],
   exports: [VariantsService]
 })
