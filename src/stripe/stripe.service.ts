@@ -4,16 +4,19 @@ import { OrdersService } from 'src/orders/orders.service';
 import { User } from 'src/users/entities/user.entity';
 import Stripe from 'stripe';
 import { ShippingAddressDto } from './dto/requests/shipping_address.dto';
-const stripe = new Stripe(process.env.STRIPE_API_KEY);
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class StripeService {
     constructor(
         private readonly cartsService: CartsService,
         private readonly ordersService: OrdersService,
+        private readonly configService: ConfigService,
       ) {}
 
     async createPaymentIntent(user: User, shippingAddressDto: ShippingAddressDto) {
+        const stripe = new Stripe(this.configService.get('STRIPE_API_KEY'));
+
         const cart = await this.cartsService.getCart(user);
         const customer = await stripe.customers.create()
         
